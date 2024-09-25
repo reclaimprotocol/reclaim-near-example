@@ -1,6 +1,6 @@
 const contractPerNetwork = {
-  mainnet: 'todo()',
-  testnet: 'reclaim-protocol-testnet-hadi-sa.testnet',
+  mainnet: 'reclaim-protocol-mainnet.near',
+  testnet: 'reclaim-protocol.testnet',
 };
 
 export const NetworkId = 'testnet';
