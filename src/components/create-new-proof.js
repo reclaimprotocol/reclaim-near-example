@@ -16,7 +16,7 @@ export const CreateNewProof = ({setNewProof, setReadyToVerify}) => {
       "for acmecorp.com on 1st january"
     );
 
-    await reclaimClient.buildProofRequest(providerId);
+    await reclaimClient.buildProofRequest(providerId, true, "V2Linking");
 
     reclaimClient.setSignature(
       await reclaimClient.generateSignature(
