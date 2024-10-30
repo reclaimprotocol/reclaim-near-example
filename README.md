@@ -1,45 +1,93 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Reclaim Protocol Starter Pack - Near
+
+This repository provides a **Next.js frontend example** for developers to interact with the Reclaim Protocol smart contract on the **Near** network. This template demonstrates how to submit and verify proofs on-chain, making it easier for developers to integrate Reclaim Protocol into their applications.
+
+---
+
+## Features
+
+- **Proof Submission**: Generate proof requests and submit them on-chain.
+- **Proof Verification**: Verify submitted proofs directly through the smart contract.
+- **Wallet Connection**: Built-in wallet connection.
+
+---
 
 ## Getting Started
 
-First, run the development server:
+Follow these steps to set up the project locally.
 
+### 1. Clone the Repository
+
+Run this command:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://gitlab.reclaimprotocol.org/starterpacks/reclaim-near-example.git
+cd reclaim-near-example
+```
+### 2. Install Dependencies
+
+Run this command:
+```bash
+npm install
+```
+### 3. Code Configuration
+
+In `src/components/create-new-proof`, fill in the necessary Reclaim credentials and replace `TODO` comments with your application-specific data:
+
+```javascript
+const reclaimClient = new Reclaim.ProofRequest("YOUR_APP_ID"); //TODO: replace with your applicationId
+const providerId = "YOUR_PROVIDER_ID"; // Replace with your provider ID
+reclaimClient.setSignature(await reclaimClient.generateSignature("YOUR_APP_SECRET" )); //TODO : replace with your APP_SECRET
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+In `src/config.js` you can find the necessary configuration to connect the wallet and interact with the smart contract. You can change depending on what network you're using:
+```javascript
+export const NetworkId = 'testnet';
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 4. Update Contract Address
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+If you deployed a custom contract, update the contract address and the metadata in `src/config.js` :
 
-## Learn More about NEAR
+```javascript
+export const ReclaimNearContract = contractPerNetwork[NetworkId]; //Replace with your contract address
+```
 
-To learn more about NEAR, take a look at the following resources:
+---
 
-- [NEAR Documentation](https://docs.near.org) - learn about NEAR.
-- [Frontend Docs](https://docs.near.org/build/web3-apps/quickstart) - learn about this example.
+## Usage
 
-You can check out [the NEAR repository](https://github.com/near) - your feedback and contributions are welcome!
+After configuration, you can run the project locally to test the proof verification process.
 
-## Learn More about Next.js
+### Start development server
 
-To learn more about Next.js, take a look at the following resources:
+Run this command:
+```bash
+npm run dev
+```
+1. **Connect Wallet**: Ensure your wallet is connected and set to the correct network.
+2. **Request Proof**: Click the "Create Claim QR Code" button to generate a QR code for proof submission.
+3. **Verify Proof**: Once the proof is received, a "Verify Proof" button appears. Click it to submit a transaction for on-chain verification.
+4. **View Transaction**: After verification, a link to view the transaction on the explorer will be available.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Code Overview
 
-## Deploy on Vercel
+`src/components/create-new-proof.js`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Proof Request: Configures and initiates proof requests through Reclaim’s SDK.
+- QR Code Generation: Displays a QR code for users to scan and submit proofs.
+- Proof Submission: Handles on-chain submission upon proof verification.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+`src/pages/index.js`
+
+
+- Proof Transformation: Transforms the received proof to be compatible with the smart contract.
+- Verification Process: Sends a transaction to verify the proof on-chain and provides a link to the transaction on the explorer.
+
+---
+
+## Troubleshooting
+
+- **Wallet Connection Issues**: Ensure that your wallet is set to the correct network that you contract is deployed on and refresh the page if the connection fails.
+- **Proof Submission Fails**: Double-check your Reclaim credentials, contract address, and that the correct network is selected.
