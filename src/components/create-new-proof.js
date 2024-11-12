@@ -1,39 +1,53 @@
-import { Reclaim } from "@reclaimprotocol/js-sdk";
-import { useState } from "react";
-import { useQRCode } from 'next-qrcode';
+import { ReclaimProofRequest } from "@reclaimprotocol/js-sdk";
+import { useState, useEffect } from "react";
+import { useQRCode } from "next-qrcode";
 
-export const CreateNewProof = ({setNewProof, setReadyToVerify}) => {
+export const CreateNewProof = ({ setNewProof, setReadyToVerify }) => {
   const [url, setUrl] = useState("");
   const { Canvas } = useQRCode();
+  const [reclaimProofRequest, setReclaimProofRequest] = useState(null);
+  const [requestUrl, setRequestUrl] = useState("");
+  const [statusUrl, setStatusUrl] = useState("");
 
-  const reclaimClient = new Reclaim.ProofRequest("0x1ef80D4B1FA482A3EeE51520e3abf0BD92afEEA0"); //TODO: replace with your applicationId
+  useEffect(() => {
+    async function initializeReclaim() {
+      const APP_ID = "0x6E0338a6D8594101Ea9e13840449242015d71B19"; // This is an example App Id Replace it with your App Id.
+      const APP_SECRET =
+        "0x1e0d6a6548b72286d747b4ac9f2ad6b07eba8ad6a99cb1191890ea3f77fae48f"; // This is an example App Secret Replace it with your App Secret.
+      const PROVIDER_ID = "6d3f6753-7ee6-49ee-a545-62f1b1822ae5"; // This is GitHub Provider Id Replace it with the provider id you want to use.
+
+      const proofRequest = await ReclaimProofRequest.init(
+        APP_ID,
+        APP_SECRET,
+        PROVIDER_ID
+      );
+      setReclaimProofRequest(proofRequest);
+    }
+
+    initializeReclaim();
+  }, []);
 
   async function generateVerificationRequest() {
-    const providerId = "1bba104c-f7e3-4b58-8b42-f8c0346cdeab"; //TODO: replace with your provider ids you had selected while creating the application
+    if (!reclaimProofRequest) {
+      console.error("Reclaim Proof Request not initialized");
+      return;
+    }
 
-    reclaimClient.addContext(
+    reclaimProofRequest.addContext(
       `user's address`,
       "for acmecorp.com on 1st january"
     );
 
-    await reclaimClient.buildProofRequest(providerId, true, "V2Linking");
+    const url = await reclaimProofRequest.getRequestUrl();
+    setUrl(url);
+    const status = reclaimProofRequest.getStatusUrl();
+    setStatusUrl(status);
 
-    reclaimClient.setSignature(
-      await reclaimClient.generateSignature(
-        "0xed3680366053c0f1af04caeaf45ecd33d65a0dee98febd586580c6b7244483fb" //TODO : replace with your APP_SECRET
-      )
-    );
-
-    const { requestUrl, statusUrl } =
-      await reclaimClient.createVerificationRequest();
-
-    setUrl(requestUrl);
-
-    await reclaimClient.startSession({
-      onSuccessCallback: (proofs) => {
-        console.log("Verification success", proofs);
-        setNewProof(proofs[0]);
-        setReadyToVerify(true)
+    await reclaimProofRequest.startSession({
+      onSuccessCallback: (proof) => {
+        console.log("Verification success", proof);
+        setNewProof(proof);
+        setReadyToVerify(true);
         // Your business logic here
       },
       onFailureCallback: (error) => {
@@ -44,33 +58,36 @@ export const CreateNewProof = ({setNewProof, setReadyToVerify}) => {
   }
   return (
     <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "50vh",
-        }}
-      >
-        {!url && (
-          <button className="btn btn-secondary" onClick={generateVerificationRequest}>
-            Create New Proof
-          </button>
-        )}
-        {
-        url && <Canvas
-            text={url}
-            options={{
-                errorCorrectionLevel: 'M',
-                margin: 3,
-                scale: 4,
-                width: 200,
-                color: {
-                dark: '#010599FF',
-                light: '#FFBF60FF',
-                },
-            }}
-            />
-        }
-      </div>
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "50vh",
+      }}
+    >
+      {!url && (
+        <button
+          className="btn btn-secondary"
+          onClick={generateVerificationRequest}
+        >
+          Create New Proof
+        </button>
+      )}
+      {url && (
+        <Canvas
+          text={url}
+          options={{
+            errorCorrectionLevel: "M",
+            margin: 3,
+            scale: 4,
+            width: 200,
+            color: {
+              dark: "#010599FF",
+              light: "#FFBF60FF",
+            },
+          }}
+        />
+      )}
+    </div>
   );
 };
